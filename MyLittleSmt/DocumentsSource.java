@@ -13,7 +13,7 @@ public class DocumentsSource {
 	String workPath = "C:\\Users\\kamil\\OneDrive\\THM_GROUP\\Projekty\\Koszty\\THM_Group";
 	private String fileName;
 	public void setWorkPath(String workPath)
-	{
+	{ 
 		this.workPath = workPath;
 	}
 	public String getFileName()

@@ -18,6 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -34,6 +35,8 @@ import MyLittleSmt.AutoAccounting;
 import MyLittleSmt.FrameTemplate;
 import MyLittleSmt.FrameTemplateButtons;
 import MyLittleSmt.FrameTemplateImageIcon;
+import MyLittleSmt.FrameTemplateTable;
+import MyLittleSmt.FrameTemplateTableNew;
 import MyLittleSmt.FrameTemplateWindow;
 import MyLittleSmt.KeyAdder;
 import MyLittleSmt.MainEntryDataWarehouse;
@@ -47,7 +50,7 @@ public class IBankStatement {
 	private ArrayList<Integer> ssKey, bsKey;
 	private DefaultTableModel ssModel,bsModel;
 	private JTable ssTable, bsTable;
-	private JTextField accountSum, altAccountSum;
+	private JTextField accountSum, altAccountSum, ssDate, ssID;
 	private Window frame;
 	public IBankStatement (String firm, String settID, String date, String bankAcc)
 	{
@@ -86,13 +89,13 @@ public class IBankStatement {
 	class Window extends FrameTemplateWindow implements ActionListener, TableModelListener, MouseListener
 	{
 		private JPanel rOption;
-		private JButton bSave, bRec, bPos, bPosAll, bPosOne, bUnPos, bImpS, bMatch, bSShow;
+		private JButton bSave, bRec, bPos, bPosAll, bPosOne, bUnPos, bImpS, bMatch, bSShow, bSShowSec;
 		private HashMap<String, Integer> ssColumnModel,  bsColumnModel, baColumnModel, bsColumnTable;
 		private ArrayList<ArrayList<String>> bankAccount;
 		private ArrayList<Object[]> recList;
 		private HashMap<String, ArrayList<String>> firmsMap;
 		private boolean notAdd = false;
-		private JMenuItem postingM,  bDel;
+		private JMenuItem postingM,  bDel, source;
 		private HashMap<Integer, String> dictColumnAndYamlPos;
 		private ArrayList<ArrayList<String>> insDictList;
 		private boolean notAddSS =false;
@@ -127,9 +130,10 @@ public class IBankStatement {
 			bUnPos.addActionListener(this);
 			bMatch = new FrameTemplateButtons().smallButton("Dopasowanie",  FrameTemplateImageIcon.iconJButton_SmallMatch());
 			bMatch.addActionListener(this);
-			bSShow = bSShow = new FrameTemplateButtons().smallButton("Poka¿ zród³o", FrameTemplateImageIcon.iconJButton_SmallShow());
+			bSShow = new FrameTemplateButtons().smallButton("Poka¿ zród³o", FrameTemplateImageIcon.iconJButton_SmallShow());
 			bSShow.addActionListener(this);
-			
+			bSShowSec = new FrameTemplateButtons().smallButton("Poka¿ zród³o", FrameTemplateImageIcon.iconJButton_SmallShow());
+			bSShowSec.addActionListener(this);
 			accountSum = new JTextField();
 			accountSum.setPreferredSize(new Dimension(125,20));
 			accountSum.setEditable(false);
@@ -137,6 +141,9 @@ public class IBankStatement {
 			altAccountSum = new JTextField();
 			altAccountSum.setPreferredSize(new Dimension(125,20));
 			altAccountSum.setEditable(false);
+			
+			ssDate = new FrameTemplateButtons().getTextField();
+			ssID = new FrameTemplateButtons().getTextField();
 			
 			JPanel upMenu = new JPanel(new BorderLayout());
 				upMenu.add(maFrame.GetUpMenu(false), BorderLayout.PAGE_START);
@@ -156,6 +163,9 @@ public class IBankStatement {
 					JPanel downUpManu = new JPanel(new BorderLayout());
 						JPanel smallButtonsUp = ssFrame.getSmallButtons();
 							smallButtonsUp.add(bMatch);
+							smallButtonsUp.add(bSShowSec);
+							smallButtonsUp.add(ssDate);
+							smallButtonsUp.add(ssID);
 						downUpManu.add(smallButtonsUp, BorderLayout.PAGE_START);
 						downUpManu.add(new JScrollPane(ssTable), BorderLayout.CENTER);
 					JPanel downDownMenu = new JPanel(new BorderLayout());
@@ -196,7 +206,10 @@ public class IBankStatement {
 			
 			postingM = new JMenuItem("Ksiêgowania");
 			postingM.addActionListener(this);
+			source = new JMenuItem("Rozliczenie");
+			source.addActionListener(this);
 			bsFrame.getPopup().add(postingM);
+			bsFrame.getPopup().add(source);
 			bsFrame.remListmDelete();
 			bDel = bsFrame.getdeleteM();
 			bDel.addActionListener(this);
@@ -223,6 +236,8 @@ public class IBankStatement {
 			ssFrame.addListenerJTable(ssTable, ssModel);
 			ssFrame.addListenerSmallButtons();
 			ssFrame.addListenerContextMenu();
+			ssTable.addMouseListener(this);
+			ssFrame.addRowSorter();
 		}
 		private void bsListeners()
 		{
@@ -241,6 +256,7 @@ public class IBankStatement {
 			dictColumnAndYamlPos.put(7, "IInstruments_Dict_Model.yml");
 			bsFrame.addDictToModel(dictColumnAndYamlPos, bsModel);
 			insDictList = bsFrame.getOryginalDictList();
+			bsFrame.addRowSorter();
 		}
 		
 		@Override
@@ -254,6 +270,7 @@ public class IBankStatement {
 			{
 				notAdd = true;
 				var reckoning = new IReckoning(true, firm, "XX",date,date,date,"RECSET", bankAccount.get(1).get(baColumnModel.get("CURRENCYCODE")));
+				String dateP = ssDate.getText().length()>0? ssDate.getText():date;
 				ArrayList<Object[]> postingList = reckoning.getPostingList();
 				bsColumnTable = bsFrame.getColumnNumbers(bsTable, bsSysAll);
 				for (int i=0;i<postingList.size();i++)
@@ -270,7 +287,7 @@ public class IBankStatement {
 						}
 					}
 					
-					Object[] bsRow = {"", "", settId, date, firm, "",  postingList.get(i)[7], postingList.get(i)[8], postingList.get(i)[9], postingList.get(i)[19], postingList.get(i)[18], false,
+					Object[] bsRow = {"", ssID.getText(), settId, dateP, firm, "",  postingList.get(i)[7], postingList.get(i)[8], postingList.get(i)[9], postingList.get(i)[19], postingList.get(i)[18], false,
 							postingList.get(i)[13],postingList.get(i)[14],postingList.get(i)[15],dim4};
 					recList.add(postingList.get(i));
 					bsModel.addRow(bsRow);
@@ -360,16 +377,30 @@ public class IBankStatement {
 			}else if (bSShow==e.getSource())
 			{
 				
-				if (ssTable.getSelectedColumn()>-1&&ssTable.getSelectedRow()>-1)
+				if (bsTable.getSelectedColumn()>-1&&bsTable.getSelectedRow()>-1)
 				{
 					bsColumnTable = bsFrame.getColumnNumbers(bsTable, bsSysAll);
 					ssFrame.setFilter((String)bsTable.getValueAt(bsTable.getSelectedRow(), bsColumnTable.get("ROWID")), 1);
 				}
+			}else if (source==e.getSource())
+			{
+				if (bsTable.getSelectedColumn()>-1&&bsTable.getSelectedRow()>-1)
+				{
+					HashMap<String, Integer> colTBS = bsFrame.getColumnNumbers(bsTable, bsSysAll);
+				new sourceWindow(500,800, "Poka¿ zród³o", bsTable.getValueAt(bsTable.getSelectedRow(),colTBS.get("FIRM")).toString(),
+						bsTable.getValueAt(bsTable.getSelectedRow(),colTBS.get("ACCOUNTNUM")).toString(),
+						bsTable.getValueAt(bsTable.getSelectedRow(),colTBS.get("SUBACCOUNT")).toString());
+				}
+			}else if (e.getSource()==bSShowSec)
+			{
+				if (ssTable.getSelectedColumn()>-1&&ssTable.getSelectedColumn()>-1)
+				{
+					HashMap<String, Integer> ssColT = ssFrame.getColumnNumbers(ssTable, ssSysAll);
+					bsFrame.setFilter((String) ssTable.getValueAt(ssTable.getSelectedRow(), ssColT.get("ID")), 1);
+				}
 			}
 			
-			
-		}
-		
+		}		
 		private void bMach()
 		{
 		ArrayList<ArrayList<String>> recList =  new StoredProcedures().genUniversalArray("getLedgerReckoning", new ArrayList<String>(Arrays.asList(firm, bankAccount.get(1).get(baColumnModel.get("CURRENCYCODE")))));
@@ -599,15 +630,20 @@ public class IBankStatement {
 				}else if (bsTable.getSelectedColumn()==bsColumnTable.get("DIMENSION_2"))
 				{
 					 
-					bsFrame.getSelectionRunWithParameters(bsTable, "getDomainValue",new ArrayList<String>(Arrays.asList("'Dimension_2.Type'")), "Dict_DomainValue.yml", "Typ", 0);
+					bsFrame.getSelectionRunWithParameters(bsTable, "getDomainValue",new ArrayList<String>(Arrays.asList("Dimension_2.Type")), "Dict_DomainValue.yml", "Typ", 0);
 				}else if (bsTable.getSelectedColumn()==bsColumnTable.get("DIMENSION_3"))
 				{
-					bsFrame.getSelectionRunWithParameters(bsTable, "getDomainValue",new ArrayList<String>(Arrays.asList("'Dimension_3.InternalContractor'")), "Dict_DomainValue.yml", "Kontrahent wewnêtrzny", 0);
+					bsFrame.getSelectionRunWithParameters(bsTable, "getDomainValue",new ArrayList<String>(Arrays.asList("Dimension_3.InternalContractor")), "Dict_DomainValue.yml", "Kontrahent wewnêtrzny", 0);
 				
 				}else if (bsTable.getSelectedColumn()==bsColumnTable.get("DIMENSION_4"))
 				{
 					bsFrame.dictCounterpartyNameFirm(bsTable);
 				}
+			}else if (e.getSource()==ssTable&&ssTable.getSelectedColumn()>=0&&ssTable.getSelectedRow()>=0)
+			{
+				HashMap<String, Integer> ssColT = ssFrame.getColumnNumbers(ssTable, ssSysAll);
+				ssDate.setText(String.valueOf(ssTable.getValueAt(ssTable.getSelectedRow(), ssColT.get("DOCUMENTDATE"))));
+				ssID.setText((String)ssTable.getValueAt(ssTable.getSelectedRow(), ssColT.get("ID")));
 			}
 		}
 
@@ -652,26 +688,26 @@ public class IBankStatement {
 		{
 			bsColumnTable = bsFrame.getColumnNumbers(bsTable, bsSysAll);
 			
-			if(bsModel.getValueAt(row, bsColumnTable.get("ID")).toString().length()<10)
+			if(bsTable.getValueAt(row, bsColumnTable.get("ID")).toString().length()<10)
 			{
 				bsFrame.Button_Save();
 			}
-			String instr = bsModel.getValueAt(row, bsColumnTable.get("DIMENSION")).toString();
-			String subPos = bsModel.getValueAt(row, bsColumnTable.get("SUBACCOUNT")).toString();
-			String oType = bsModel.getValueAt(row, bsColumnTable.get("OTYPE")).toString();
-			String dim2 = bsModel.getValueAt(row, bsColumnTable.get("DIMENSION_2")).toString();
-			String dim3 = bsModel.getValueAt(row, bsColumnTable.get("DIMENSION_3")).toString();
+			String instr = bsTable.getValueAt(row, bsColumnTable.get("DIMENSION")).toString();
+			String subPos = bsTable.getValueAt(row, bsColumnTable.get("SUBACCOUNT")).toString();
+			String oType = bsTable.getValueAt(row, bsColumnTable.get("OTYPE")).toString();
+			String dim2 = bsTable.getValueAt(row, bsColumnTable.get("DIMENSION_2")).toString();
+			String dim3 = bsTable.getValueAt(row, bsColumnTable.get("DIMENSION_3")).toString();
 			String dim4 = "";
 			String accountnumB = bankAccount.get(1).get(baColumnModel.get("ACCOUNTNUM"));
-			String docDate = bsModel.getValueAt(row, bsColumnTable.get("DOCUMENTDATE")).toString();
-			String txt = bsModel.getValueAt(row, bsColumnTable.get("TXT")).toString();
+			String docDate = bsTable.getValueAt(row, bsColumnTable.get("DOCUMENTDATE")).toString();
+			String txt = bsTable.getValueAt(row, bsColumnTable.get("TXT")).toString();
 			String currency = bankAccount.get(1).get(baColumnModel.get("CURRENCYCODE"));
-			boolean ctB = ((boolean) bsModel.getValueAt(row, bsColumnTable.get("CREDITING"))==true? false : true);
-			boolean ct =(boolean) bsModel.getValueAt(row, bsColumnTable.get("CREDITING"));
+			boolean ctB = ((boolean) bsTable.getValueAt(row, bsColumnTable.get("CREDITING"))==true? false : true);
+			boolean ct =(boolean) bsTable.getValueAt(row, bsColumnTable.get("CREDITING"));
 			
 			for (int i=0;i<insDictList.size();i++)
 			{
-				if (bsModel.getValueAt(row, bsColumnTable.get("DIMENSION_4")).toString().equals(insDictList.get(i).get(1)))
+				if (bsTable.getValueAt(row, bsColumnTable.get("DIMENSION_4")).toString().equals(insDictList.get(i).get(1)))
 				{
 					dim4=insDictList.get(i).get(0);
 				}
@@ -693,18 +729,18 @@ public class IBankStatement {
 		//	}
 			
 			
-			AutoAccounting posting = new AutoAccounting(firm, bsModel.getValueAt(row, bsColumnTable.get("ID")).toString(), instr, oType);
+			AutoAccounting posting = new AutoAccounting(firm, bsTable.getValueAt(row, bsColumnTable.get("ID")).toString(), instr, oType);
 			Object[] argList = posting.getPostingList(false);
 			ArrayList<Object[]> postingList = new ArrayList<Object[]>();
 			postingList.add(argList);
-			String subbAccount = bsModel.getValueAt(row, bsColumnTable.get("SUBACCOUNT")).toString().length()>1 ? bsModel.getValueAt(row, bsColumnTable.get("SUBACCOUNT")).toString(): bsModel.getValueAt(row, bsColumnTable.get("ID")).toString();
+			String subbAccount = bsTable.getValueAt(row, bsColumnTable.get("SUBACCOUNT")).toString().length()>1 ? bsTable.getValueAt(row, bsColumnTable.get("SUBACCOUNT")).toString(): bsTable.getValueAt(row, bsColumnTable.get("ID")).toString();
 			
 			
 			for (int i=0; i<2; i++)
 			{
-				Object[] newRow = {bsModel.getValueAt(row, bsColumnTable.get("ID")).toString(), bsModel.getValueAt(row, bsColumnTable.get("FIRM")).toString(), 
-									postingList.size(),docDate, docDate, docDate, txt, (i==0 ?accountnumB: bsModel.getValueAt(row, bsColumnTable.get("ACCOUNTNUM")).toString() ),
-									bsModel.getValueAt(row, bsColumnTable.get("AMOUNTCUR")).toString() ,(i==0 ? ctB: ct), currency,"0","0",instr,dim2,dim3,dim4, "", 
+				Object[] newRow = {bsTable.getValueAt(row, bsColumnTable.get("ID")).toString(), bsTable.getValueAt(row, bsColumnTable.get("FIRM")).toString(), 
+									postingList.size(),docDate, docDate, docDate, txt, (i==0 ?accountnumB: bsTable.getValueAt(row, bsColumnTable.get("ACCOUNTNUM")).toString() ),
+									bsTable.getValueAt(row, bsColumnTable.get("AMOUNTCUR")).toString() ,(i==0 ? ctB: ct), currency,"0","0",instr,dim2,dim3,dim4, "", 
 									subbAccount, oType, book };	
 				postingList.add(newRow);
 			}
@@ -722,6 +758,39 @@ public class IBankStatement {
 			}
 			notAddSS = false;
 			ssFrame.Button_Save();
+		}
+		
+		class sourceWindow extends FrameTemplateWindow
+		{
+			private cTable cTab;
+			public sourceWindow(int x, int y, String title, String firm, String acc, String subAcc) {
+				super(x, y, title);
+				cTab = new cTable("IPosting_Ledger_sys.yml", "getLedgerAccBySubAcc", new ArrayList<String>(Arrays.asList(firm, acc, subAcc)), 1 , false);
+				// TODO Auto-generated constructor stub
+				add(cTab.getFrame().GetUpMenu(false), BorderLayout.PAGE_START);
+				add(cTab.getPanel(), BorderLayout.CENTER);
+				pack();
+				setVisible(true);
+				setExtendedState(JFrame.MAXIMIZED_BOTH);
+			
+			}
+			class cTable extends FrameTemplateTableNew
+			{
+
+				public cTable(String sysYaml, String procedure, ArrayList<String> procParameters, int enableType, boolean check) {
+					super(sysYaml, procedure, procParameters, enableType, check);
+					// TODO Auto-generated constructor stub
+				}
+				JPanel getPanel()
+				{
+					JPanel panel = new JPanel(new BorderLayout());
+						panel.add(new JScrollPane(table), BorderLayout.CENTER);
+						frame.sourceContextMenu();
+						addListeners(new ArrayList<Integer>(Arrays.asList(0,1,2)));
+						frame.setkeyCol(0);
+					return panel;		
+				}
+			}
 		}
 	
 	}

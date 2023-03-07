@@ -965,6 +965,7 @@ public class FrameTemplateListener implements KeyListener, MouseListener, Action
 		}
 	}	
 	
+	
 	public void RowSorterFalse()
 	{
 		if (table!=null&&table.getRowCount()>0)

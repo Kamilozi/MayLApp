@@ -619,6 +619,7 @@ private boolean isReck=false;
 		//wy³¹czenie autouzupe³niania dla automatycznych ksiêgowañ
 		if (oType.equals("COSINV")||oType.equals("MANPOS"))
 		{
+			ledTable.setAutoCreateRowSorter(false);
 			ledModel.setValueAt(posId, row, 0);
 			ledModel.setValueAt(firmId, row, 1);
 			ledModel.setValueAt(ledModel.getRowCount(), row, 2);
@@ -640,6 +641,9 @@ private boolean isReck=false;
 			ledModel.setValueAt(oType, row,19);
 			
 		}
+		
+		
+	
 		ledModel.setValueAt(currency, row,10);	
 		ledModel.setValueAt(CurrencyRate, row,11);
 		

@@ -31,6 +31,9 @@ public class Reports {
 				if (reportList.get(i).get(map.get("Report")).equals("Balance"))
 				{
 					Balance(firms.get(q).get(1), dateFrom, dateTo, parameters);
+				}else if (reportList.get(i).get(map.get("Report")).equals("CostPositions"))
+				{
+					CostPostitions(firms.get(q).get(1), dateFrom, dateTo, parameters);
 				}
 			}
 		}
@@ -40,6 +43,56 @@ public class Reports {
 		
 	}
 	
+	
+	public void CostPostitions(String firm, String dateFrom, String dateTo, ArrayList<ArrayList<String>> parameters)
+	{
+		String path = null;
+		String format = null;
+		String Open=null;
+		String modDateTime="0";
+		HashMap<String, Integer> mapPar = new FrameTemplate().getColumnNumbers(parameters.get(0));
+		
+		for (int i=1;i<parameters.size();i++)
+		{
+			if (parameters.get(i).get(mapPar.get("Code")).equals("Path"))
+			{
+				path = parameters.get(i).get(mapPar.get("CodeValue"));
+			}else if (parameters.get(i).get(mapPar.get("Code")).equals("Format"))
+			{
+				format = parameters.get(i).get(mapPar.get("CodeValue"));
+			}else if (parameters.get(i).get(mapPar.get("Code")).equals("Open"))
+			{
+				Open = parameters.get(i).get(mapPar.get("CodeValue"));
+			}else if (parameters.get(i).get(mapPar.get("Code")).equals("ModDateTime"))
+			{
+				modDateTime = parameters.get(i).get(mapPar.get("CodeValue"));
+			}
+		}
+		ArrayList<ArrayList<String>> cosPost = new StoredProcedures().genUniversalArray("reportPositions", new ArrayList<String>(Arrays.asList(firm, dateFrom,dateTo,modDateTime)));
+		if (format.equals("XLS"))
+		{
+			for (int q =1 ;q<cosPost.size();q++)
+			{
+			cosPost.get(q).set(4, String.format("%.2f",Double.valueOf(cosPost.get(q).get(4))));
+			cosPost.get(q).set(5, String.format("%.2f",Double.valueOf(cosPost.get(q).get(5))));
+			cosPost.get(q).set(6, String.format("%.2f",Double.valueOf(cosPost.get(q).get(6))));
+			}
+			String fileName = path + "CostPost_" + dateTo + "." + format;
+			try
+			{
+			new ExcelFile().ArrayListToxls(cosPost,fileName );
+			AddLog.AddToLog("Plik zapisany w lokalizacji: " + fileName, "(I)");
+			if (Open!= null && Open.equals("1"))
+			{
+				new ExcelFile().tryOpen(fileName);
+			}
+			} catch (Exception e)
+			{
+				AddLog.AddToLog("Proces nie mo¿e uzyskaæ dostêpu do pliku lub lokalizacji", "(I)");
+			}
+			
+		}
+	}
 	public void Balance(String firm, String dateFrom, String dateTo, ArrayList<ArrayList<String>> parameters)
 	{
 		String path = null;

@@ -103,7 +103,6 @@ private JButton bNew;
 		{
 			model.addTableModelListener(this);
 			addListeners(new ArrayList<Integer>(Arrays.asList(0,1,2)));
-
 			frame.addListenerRibbon();
 		}
 		
@@ -149,6 +148,7 @@ private JButton bNew;
 			if (strfiltr.trim().length()>0)
 			{
 				 dv.newModel(new ArrayList<String>(Arrays.asList(strfiltr)));
+				 dv.addListenersDV();
 				 domain.setText(strfiltr);
 				 
 			}

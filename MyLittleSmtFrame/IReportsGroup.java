@@ -126,6 +126,7 @@ public class IReportsGroup extends FrameTemplateWindow implements TableModelList
 				boolean isCheck) {
 			super(yamlSys, modelProcedure, modelParameters, enableType, isCheck);
 			smallButtons = frame.getSmallButtons();
+			addAllListeners();
 		}
 		private JPanel getSmallButtons()
 		{
@@ -190,7 +191,7 @@ public class IReportsGroup extends FrameTemplateWindow implements TableModelList
 			subGro.newModel(new ArrayList<String>(Arrays.asList(mainG)));
 			subModel = subGro.getModel();
 			subModel.addTableModelListener(this);
-			subGro.addAllListeners();
+		//	subGro.addAllListeners();
 			
 		}
 	}

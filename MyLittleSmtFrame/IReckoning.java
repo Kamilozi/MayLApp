@@ -39,12 +39,17 @@ public class IReckoning
 			ArrayList<ArrayList<Object>> resultList = window.getResultList();
 			HashMap<String, Integer> columnResult = window.getColumnResult();
 			postingList = new ArrayList<Object[]>();
+		 
+			
 			for (int i = 1;i<resultList.size();i++)
 			{
 			if (isLed==true)
 			{
+		 
 				Object[] data = {posId,firm, 0, docDate, altDate,setDate, "", resultList.get(i).get(columnResult.get("Account")), resultList.get(i).get(columnResult.get("AMOUNTCUR")),
-								((boolean)resultList.get(i).get(columnResult.get("CREDITING"))==true ? false : true), resultList.get(i).get(columnResult.get("CURRENCYCODE")), 0, 
+								((boolean)resultList.get(i).get(columnResult.get("CREDITING"))==true ? false : true), 
+								resultList.get(i).get(columnResult.get("CURRENCYCODE")), 
+								0, 
 								 resultList.get(i).get(columnResult.get("AMOUNTMST")),resultList.get(i).get(columnResult.get("DIMENSION")),resultList.get(i).get(columnResult.get("DIMENSION_2")),
 								 resultList.get(i).get(columnResult.get("DIMENSION_3")), resultList.get(i).get(columnResult.get("DIMENSION_4")),"", resultList.get(i).get(columnResult.get("SUBACCOUNT")), oType, false};
 				postingList.add(data);
@@ -110,7 +115,7 @@ public class IReckoning
 			columnTable = frame.getColumnNumbers(table, sysAll);
 			resultList = new ArrayList<ArrayList<Object>>();
 			HashMap<Integer, String> dictColumnAndYaml = new HashMap<Integer, String>();
-			dictColumnAndYaml.put((isLed==true ? 10 : 9), "IInstruments_Dict_Model.yml");
+			dictColumnAndYaml.put((isLed==true ? 12 : 9), "IInstruments_Dict_Model.yml");
 			frame.addDictToModel(dictColumnAndYaml, model);
 			insDictList = frame.getOryginalDictList();
 			model.addTableModelListener(this);
@@ -244,7 +249,7 @@ public class IReckoning
 					ArrayList<Object> data = new ArrayList<Object>();
 					for (int i=0; i<model.getColumnCount();i++)
 					{
-						if (columnResult.get("DIMENSION_4")==i)
+						if (columnResult.get("DIMENSION_4")==i&&model.getValueAt(j, i).toString().trim().length()>0)
 						{
 							for (int k=0;k<insDictList.size();k++)
 							{

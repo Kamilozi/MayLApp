@@ -1408,9 +1408,12 @@ if (table.getCellEditor() != null)
 	public void setModel(DefaultTableModel Models)
 	{
 		this.Model = Models;
+		if (listener!=null)
+		{
 		listener.setModel(Models);
 	 	addListenerJTable(table, Models);
-		table.setModel(Model);
+		}
+	 	table.setModel(Model);
 		
 		
 	}
@@ -1649,13 +1652,19 @@ if (table.getCellEditor() != null)
 	{
 
 		listener = new FrameTemplateListener(table, Model, sysall, mapsysBase, mapsys, TableKey);
-		
+	
 
 	}
 	public void removeFrameTempListener()
 	{
 		listener=null;
 	}
+	
+	public void addRowSorter()
+	{
+		listener.RowSorterFalse();
+	}
+	
     public void setkeyCol(int keyCol )
     {
     	listener.setkeyCol(keyCol);
